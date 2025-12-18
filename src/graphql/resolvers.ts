@@ -8,7 +8,7 @@ import {
   updateClothing,
   deleteClothing,
 } from "../collections/productsClothingStore";
-import { createUser, validateUser } from "../collections/usersClothingStore";
+import { createUser, validateUser } from "../collections/usersCollection";
 import { signToken } from "../auth";
 import { ClothingUser } from "../types";
 import { getDB } from "../db/mongo";
