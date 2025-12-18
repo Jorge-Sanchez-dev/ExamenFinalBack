@@ -2,12 +2,20 @@ import { ObjectId, OptionalId } from "mongodb";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { getDB } from "../db/mongo";
-import { COLLECTION_TRAINERS, COLLECTION_POKEMONS,COLLECTION_OWNED_POKEMONS} from "../utils";
-import type { GraphQLContext, JwtPayload, PokemonType, TrainerType, OwnedPokemonType } from "../types";
-
+import {
+  COLLECTION_TRAINERS,
+  COLLECTION_POKEMONS,
+  COLLECTION_OWNED_POKEMONS,
+} from "../utils";
+import type {
+  GraphQLContext,
+  JwtPayload,
+  PokemonType,
+  TrainerType,
+  OwnedPokemonType,
+} from "../types";
 
 const JWT_SECRET = process.env.SECRET || "dev_secret_change_me";
-
 
 function requireAuth(ctx: GraphQLContext) {
   if (!ctx.user?.trainerId) throw new Error("Unauthorized");
@@ -32,7 +40,13 @@ export const resolvers = {
     me: async (_: any, __: any, ctx: GraphQLContext) => {
       const trainerId = requireAuth(ctx);
       const db = getDB();
-      return { user: { trainerId: ObjectId } };
+
+      const trainer = await db
+        .collection<TrainerType>(COLLECTION_TRAINERS)
+        .findOne({ _id: trainerId });
+
+      if (!trainer) throw new Error("Unauthorized");
+      return trainer;
     },
 
     pokemons: async (_: any, args: { page?: number; size?: number }) => {
@@ -60,9 +74,12 @@ export const resolvers = {
       const db = getDB();
       const name = args.name.trim();
       if (!name) throw new Error("Name required");
-      if (!args.password || args.password.length < 4) throw new Error("Password too short");
+      if (!args.password || args.password.length < 4)
+        throw new Error("Password too short");
 
-      const existing = await db.collection(COLLECTION_TRAINERS).findOne({ name });
+      const existing = await db
+        .collection(COLLECTION_TRAINERS)
+        .findOne({ name });
       if (existing) throw new Error("Trainer already exists");
 
       const passwordHash = await bcrypt.hash(args.password, 10);
@@ -80,18 +97,29 @@ export const resolvers = {
       const db = getDB();
       const name = args.name.trim();
 
-      const trainer = await db.collection(COLLECTION_TRAINERS).findOne({ name });
+      const trainer = await db
+        .collection(COLLECTION_TRAINERS)
+        .findOne({ name });
       if (!trainer) throw new Error("Invalid credentials");
 
       const ok = await bcrypt.compare(args.password, trainer.passwordHash);
       if (!ok) throw new Error("Invalid credentials");
 
-      return signToken({ trainerId: trainer._id.toString(), name: trainer.name });
+      return signToken({
+        trainerId: trainer._id.toString(),
+        name: trainer.name,
+      });
     },
 
     createPokemon: async (
       _: any,
-      args: { name: string; description: string; height: number; weight: number; types: PokemonType[] }
+      args: {
+        name: string;
+        description: string;
+        height: number;
+        weight: number;
+        types: PokemonType[];
+      }
     ) => {
       const db = getDB();
       const name = args.name.trim();
@@ -99,9 +127,12 @@ export const resolvers = {
 
       if (!name) throw new Error("Name required");
       if (!description) throw new Error("Description required");
-      if (typeof args.height !== "number" || args.height <= 0) throw new Error("Height must be > 0");
-      if (typeof args.weight !== "number" || args.weight <= 0) throw new Error("Weight must be > 0");
-      if (!Array.isArray(args.types) || args.types.length === 0) throw new Error("Types required");
+      if (typeof args.height !== "number" || args.height <= 0)
+        throw new Error("Height must be > 0");
+      if (typeof args.weight !== "number" || args.weight <= 0)
+        throw new Error("Weight must be > 0");
+      if (!Array.isArray(args.types) || args.types.length === 0)
+        throw new Error("Types required");
 
       const insertRes = await db.collection(COLLECTION_POKEMONS).insertOne({
         name,
@@ -111,7 +142,9 @@ export const resolvers = {
         types: args.types,
       });
 
-      return await db.collection(COLLECTION_POKEMONS).findOne({ _id: insertRes.insertedId });
+      return await db
+        .collection(COLLECTION_POKEMONS)
+        .findOne({ _id: insertRes.insertedId });
     },
 
     catchPokemon: async (
@@ -135,7 +168,8 @@ export const resolvers = {
         .findOne({ _id: trainerId });
 
       if (!trainer) throw new Error("Trainer not found");
-      if ((trainer.pokemons?.length ?? 0) >= 6) throw new Error("Trainer already has 6 pokemons");
+      if ((trainer.pokemons?.length ?? 0) >= 6)
+        throw new Error("Trainer already has 6 pokemons");
 
       const insertRes = await db
         .collection<OptionalId<OwnedPokemonType>>(COLLECTION_OWNED_POKEMONS)
@@ -152,14 +186,21 @@ export const resolvers = {
 
       await db
         .collection<TrainerType>(COLLECTION_TRAINERS)
-        .updateOne({ _id: trainerId }, { $push: { pokemons: insertRes.insertedId } });
+        .updateOne(
+          { _id: trainerId },
+          { $push: { pokemons: insertRes.insertedId } }
+        );
 
       return await db
         .collection<OwnedPokemonType>(COLLECTION_OWNED_POKEMONS)
         .findOne({ _id: insertRes.insertedId });
     },
 
-    freePokemon: async (_: any, args: { ownedPokemonId: string }, ctx: GraphQLContext) => {
+    freePokemon: async (
+      _: any,
+      args: { ownedPokemonId: string },
+      ctx: GraphQLContext
+    ) => {
       const trainerId = requireAuth(ctx);
       const db = getDB();
 
@@ -170,15 +211,20 @@ export const resolvers = {
         .findOne({ _id: ownedId });
 
       if (!owned) throw new Error("OwnedPokemon not found");
-      if (owned.trainerId.toString() !== trainerId.toString()) throw new Error("Forbidden");
+      if (owned.trainerId.toString() !== trainerId.toString())
+        throw new Error("Forbidden");
 
-      await db.collection<OwnedPokemonType>(COLLECTION_OWNED_POKEMONS).deleteOne({ _id: ownedId });
+      await db
+        .collection<OwnedPokemonType>(COLLECTION_OWNED_POKEMONS)
+        .deleteOne({ _id: ownedId });
 
       await db
         .collection<TrainerType>(COLLECTION_TRAINERS)
         .updateOne({ _id: trainerId }, { $pull: { pokemons: ownedId } });
 
-      return await db.collection(COLLECTION_TRAINERS).findOne({ _id: trainerId });
+      return await db
+        .collection(COLLECTION_TRAINERS)
+        .findOne({ _id: trainerId });
     },
   },
 
@@ -187,7 +233,10 @@ export const resolvers = {
       const db = getDB();
       const ids: ObjectId[] = trainer.pokemons ?? [];
       if (ids.length === 0) return [];
-      return await db.collection(COLLECTION_OWNED_POKEMONS).find({ _id: { $in: ids } }).toArray();
+      return await db
+        .collection(COLLECTION_OWNED_POKEMONS)
+        .find({ _id: { $in: ids } })
+        .toArray();
     },
   },
 
@@ -195,7 +244,9 @@ export const resolvers = {
     pokemon: async (owned: any) => {
       const db = getDB();
       const pokemonId: ObjectId = owned.pokemon;
-      return await db.collection(COLLECTION_POKEMONS).findOne({ _id: pokemonId });
+      return await db
+        .collection(COLLECTION_POKEMONS)
+        .findOne({ _id: pokemonId });
     },
   },
 };
