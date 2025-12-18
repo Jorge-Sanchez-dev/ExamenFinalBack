@@ -4,6 +4,9 @@ import { typeDefs } from "./graphql/schema";
 import { resolvers } from "./graphql/resolvers";
 import { getUserFromToken } from "./auth";
 
+import dotenv from "dotenv";
+dotenv.config();
+
 const start = async () => {
   await connectToMongoDB();
 

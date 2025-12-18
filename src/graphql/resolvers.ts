@@ -6,7 +6,8 @@ import { COLLECTION_TRAINERS, COLLECTION_POKEMONS,COLLECTION_OWNED_POKEMONS} fro
 import type { GraphQLContext, JwtPayload, PokemonType, TrainerType, OwnedPokemonType } from "../types";
 
 
-const JWT_SECRET = process.env.JWT_SECRET || "dev_secret_change_me";
+const JWT_SECRET = process.env.SECRET || "dev_secret_change_me";
+
 
 function requireAuth(ctx: GraphQLContext) {
   if (!ctx.user?.trainerId) throw new Error("Unauthorized");
@@ -31,7 +32,7 @@ export const resolvers = {
     me: async (_: any, __: any, ctx: GraphQLContext) => {
       const trainerId = requireAuth(ctx);
       const db = getDB();
-      return await db.collection(COLLECTION_TRAINERS).findOne({ _id: trainerId });
+      return { user: { trainerId: ObjectId } };
     },
 
     pokemons: async (_: any, args: { page?: number; size?: number }) => {

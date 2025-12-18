@@ -7,7 +7,7 @@ dotenv.config();
 const SUPER_SECRETO = process.env.SECRET;
 
 type TokenPayload = {
-  userId: string;
+  trainerId: string;
 };
 
 export const signToken = (userId: string): string => {
@@ -28,11 +28,12 @@ export const verifyToken = (token: string): TokenPayload | null => {
   }
 };
 
+
 export const getUserFromToken = async (token: string) => {
   const clean = token.startsWith("Bearer ") ? token.slice(7) : token;
   const payload = verifyToken(clean);
   if (!payload) return null;
 
-  return { trainerId: new ObjectId(payload.userId) };
+  return { trainerId: new ObjectId(payload.trainerId) };
 };
 
