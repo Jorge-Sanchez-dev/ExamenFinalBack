@@ -1,36 +1,69 @@
-import { gql } from "apollo-server";
-
-
+import { gql } from "graphql-tag";
 
 export const typeDefs = gql`
+  enum PokemonType {
+    NORMAL
+    FIRE
+    WATER
+    ELECTRIC
+    GRASS
+    ICE
+    FIGHTING
+    POISON
+    GROUND
+    FLYING
+    PSYCHIC
+    BUG
+    ROCK
+    GHOST
+    DRAGON
+  }
 
-    type User {
-        _id: ID!
-        email: String!
-        clothes: [Clothing]!
-    }
+  type Pokemon {
+    _id: ID!
+    name: String!
+    description: String!
+    height: Float!
+    weight: Float!
+    types: [PokemonType!]!
+  }
 
-    type Clothing {
-        _id: ID!
-        name: String!
-        size: String!
-        color: String!
-        price: Float!
-    }
+  type OwnedPokemon {
+    _id: ID!
+    pokemon: Pokemon!
+    nickname: String
+    attack: Int!
+    defense: Int!
+    speed: Int!
+    special: Int!
+    level: Int!
+  }
 
-    type Query {
-        me: User
-        clothes(page: Int, size: Int): [Clothing]!
-        clothing(id: ID!): Clothing
-    }
+  type Trainer {
+    _id: ID!
+    name: String!
+    pokemons: [OwnedPokemon]!
+  }
 
-    type Mutation {
-        addClothing(name: String!, size: String!, color: String!, price: Float!): Clothing!
-        buyClothing(clothingId: ID!): User!
-        returnClothing(clothingId: ID!): User
-        updateClothing(clothingId: ID! name: String size: String color: String price: Float): Clothing
-        deleteClothing(clothingId: ID!): Boolean!
-        register(email: String!, password: String!): String!
-        login(email: String!, password: String!): String!
-    }
-`
+  type Query {
+    me: Trainer
+    pokemons(page: Int, size: Int): [Pokemon]!
+    pokemon(id: ID!): Pokemon
+  }
+
+  type Mutation {
+    startJourney(name: String!, password: String!): String!
+    login(name: String!, password: String!): String!
+
+    createPokemon(
+      name: String!
+      description: String!
+      height: Float!
+      weight: Float!
+      types: [PokemonType!]!
+    ): Pokemon!
+
+    catchPokemon(pokemonId: ID!, nickname: String): OwnedPokemon!
+    freePokemon(ownedPokemonId: ID!): Trainer!
+  }
+`;
