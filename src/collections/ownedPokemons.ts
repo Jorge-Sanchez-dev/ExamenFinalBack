@@ -1,3 +1,4 @@
+//Jorge Sanchez Lopez
 import { ObjectId, OptionalId } from "mongodb";
 import { getDB } from "../db/mongo";
 import { COLLECTION_OWNED_POKEMONS } from "../utils";

@@ -1,3 +1,4 @@
+//Jorge Sanchez Lopez
 import { ApolloServer } from "apollo-server";
 import { connectToMongoDB } from "./db/mongo";
 import { typeDefs } from "./graphql/schema";

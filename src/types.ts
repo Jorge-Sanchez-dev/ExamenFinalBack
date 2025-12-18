@@ -1,4 +1,4 @@
-
+//Jorge Sanchez Lopez
 import { ObjectId } from "mongodb";
 
 export type PokemonType = "NORMAL" | "FIRE"  | "WATER"  | "ELECTRIC" | "GRASS"  | "ICE" | "FIGHTING"  | "POISON" | "GROUND"  | "FLYING" | "PSYCHIC" | "BUG" | "ROCK" | "GHOST" | "DRAGON";

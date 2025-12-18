@@ -1,4 +1,4 @@
-
+//Jorge Sanchez Lopez
 
 
 export const COLLECTION_TRAINERS = "trainers";
