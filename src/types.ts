@@ -1,9 +1,9 @@
 
 import { ObjectId } from "mongodb";
 
-export type Pokemon = | "NORMAL" | "FIRE"  | "WATER"  | "ELECTRIC" | "GRASS"  | "ICE" | "FIGHTING"  | "POISON" | "GROUND"  | "FLYING" | "PSYCHIC" | "BUG" | "ROCK" | "GHOST" | "DRAGON";
+export type PokemonType = "NORMAL" | "FIRE"  | "WATER"  | "ELECTRIC" | "GRASS"  | "ICE" | "FIGHTING"  | "POISON" | "GROUND"  | "FLYING" | "PSYCHIC" | "BUG" | "ROCK" | "GHOST" | "DRAGON";
 
-export interface PokemonType {
+export type Pokemon = {
   _id: ObjectId;
   name: string;
   description: string;
@@ -12,7 +12,7 @@ export interface PokemonType {
   types: PokemonType[];
 }
 
-export interface OwnedPokemonType{
+export type OwnedPokemonType = {
   _id: ObjectId;
   trainerId: ObjectId;
   pokemon: ObjectId;
@@ -24,19 +24,19 @@ export interface OwnedPokemonType{
   level: number;
 }
 
-export interface TrainerType {
+export type TrainerType = {
   _id: ObjectId;
   name: string;
   passwordHash: string;
   pokemons: ObjectId[];
 }
 
-export interface JwtPayload {
+export type JwtPayload ={
   trainerId: string;
   name?: string;
 }
 
-export interface GraphQLContext {
+export type GraphQLContext ={
   token?: string;
   user?: { trainerId: ObjectId; name?: string } | null;
 }

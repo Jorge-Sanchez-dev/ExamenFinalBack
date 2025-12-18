@@ -1,4 +1,3 @@
-// src/collections/trainersStore.ts
 import { ObjectId } from "mongodb";
 import { getDB } from "../db/mongo";
 import { COLLECTION_TRAINERS } from "../utils";

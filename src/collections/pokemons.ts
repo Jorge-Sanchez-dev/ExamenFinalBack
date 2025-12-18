@@ -1,8 +1,7 @@
-// src/collections/pokemonsStore.ts
 import { ObjectId } from "mongodb";
 import { getDB } from "../db/mongo";
 import { COLLECTION_POKEMONS } from "../utils";
-import { PokemonType } from "../types";
+import { Pokemon, PokemonType } from "../types";
 
 export const createPokemon = async (data: {
   name: string;
@@ -13,13 +12,13 @@ export const createPokemon = async (data: {
 }) => {
   const db = getDB();
 
-  const res = await db.collection<PokemonType>(COLLECTION_POKEMONS).insertOne({
+  const res = await db.collection<Pokemon>(COLLECTION_POKEMONS).insertOne({
     ...data,
     _id: new ObjectId
   });
 
   return await db
-    .collection<PokemonType>(COLLECTION_POKEMONS)
+    .collection<Pokemon>(COLLECTION_POKEMONS)
     .findOne({ _id: res.insertedId });
 };
 
@@ -27,7 +26,7 @@ export const getAllPokemons = async (page = 1, size = 10) => {
   const db = getDB();
 
   return await db
-    .collection<PokemonType>(COLLECTION_POKEMONS)
+    .collection<Pokemon>(COLLECTION_POKEMONS)
     .find({})
     .skip((page - 1) * size)
     .limit(size)
@@ -39,6 +38,6 @@ export const getPokemonById = async (id: string | ObjectId) => {
   const _id = typeof id === "string" ? new ObjectId(id) : id;
 
   return await db
-    .collection<PokemonType>(COLLECTION_POKEMONS)
+    .collection<Pokemon>(COLLECTION_POKEMONS)
     .findOne({ _id });
 };
